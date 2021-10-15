@@ -6,7 +6,7 @@
 
 ## Описание ТЗ:
 
-##### _Функционал для администратора системы:_
+##### _Функционал:_
 API методы:
 Метод сохранения статистики
 Метод показа статистики
@@ -52,15 +52,18 @@ cpm = cost/views * 1000 (средняя стоимость 1000 показов)
   * python 3.9
   * Django 3.2.6
   * djangorestframework
+  * drf-yasg
 
 Склонируйте репозиторий с помощью git
 
-    git clone https://github.com/NikSNV/user_survey.git
+    git clone https://github.com/NikSNV/counter.git
 Перейти в папку:
 ```bash
-cd user_survey
+cd counter
 ```
 Создать и активировать виртуальное окружение Python.
+
+## Используется база данных SQLLite3
 
 Установить зависимости из файла **requirements.txt**:
 ```bash
@@ -75,7 +78,7 @@ pip install -r requirements.txt
 python manage.py makemigrations
 python manage.py migrate
 ```
-* Создание суперпользователя
+* Создание суперпользователя по необходимости
 ```bash
 python manage.py createsuperuser
 ```
@@ -95,260 +98,36 @@ python manage.py runserver
 
 
 ### _Документация API_ (создал автодокументирование API на swagger доступно по адресу http://127.0.0.1:8000/swagger/ )
-### Чтобы получить токен пользователя: 
-* Request method: GET
-* URL: http://localhost:8000/api/login/
-* Body: 
-    * username: 
-    * password: 
-* Example:
-```
-curl --location --request GET 'http://localhost:8000/api/login/' \
---form 'username=%username' \
---form 'password=%password'
-```
 
-### Чтобы создать опрос:
+
+### Метод сохранения статистики:
 * Request method: POST
-* URL: http://localhost:8000/api/surveysApp/create/
-* Header:
-   *  Authorization: Token userToken
-* Body:
-    * survey_name: name of survey
-    * pub_date: publication date can be set only when survey is created, format: YYYY-MM-DD HH:MM:SS
-    * end_date: survey end date, format: YYYY-MM-DD HH:MM:SS
-    * survey_description: description of survey
 * Example: 
 ```
-curl --location --request POST 'http://localhost:8000/api/surveysApp/create/' \
---header 'Authorization: Token %userToken' \
---form 'survey_name=%survey_name' \
---form 'pub_date=%pub_date' \
---form 'end_date=%end_date \
---form 'survey_description=%survey_description'
+curl  -H 'Content-Type: application/json' --data '{"date": "2021-02-02","views": 800, "clicks": 650, "cost": 70.0}' http://127.0.0.1:8000/api/counters/
 ```
 
-### Обновить опрос:
-* Request method: PATCH
-* URL: http://localhost:8000/api/surveysApp/update/[survey_id]/
-* Header:
-    * Authorization: Token userToken
-* Param:
-    * survey_id 
-* Body:
-    * survey_name: name of survey
-    * end_date: survey end date, format: YYYY-MM-DD HH:MM:SS
-    * survey_description: description of survey
-* Example:
-```
-curl --location --request PATCH 'http://localhost:8000/api/surveysApp/update/[survey_id]/' \
---header 'Authorization: Token %userToken' \
---form 'survey_name=%survey_name' \
---form 'end_date=%end_date \
---form 'survey_description=%survey_description'
-```
-
-### Удалить опрос:
-* Request method: DELETE
-* URL: http://localhost:8000/api/surveysApp/update/[survey_id]
-* Header:
-    * Authorization: Token userToken
-* Param:
-    * survey_id
-Example:
-```
-curl --location --request DELETE 'http://localhost:8000/api/surveysApp/update/[survey_id]/' \
---header 'Authorization: Token %userToken'
-```
-
-### Посмотреть все опросы:
+### Метод показа статистики с фильтрацией по заданному диапазону дат:
 * Request method: GET
-* URL: http://localhost:8000/api/surveysApp/view/
-* Header:
-    * Authorization: Token userToken
-* Example:
-```
-curl --location --request GET 'http://localhost:8000/api/surveysApp/view/' \
---header 'Authorization: Token %userToken'
-```
+* URL Example: http://127.0.0.1:8000/api/counters/2020-01-01/2021-10-15/
 
-### Просмотр текущих активных опросов:
+
+### Метод показа статистики с выбором фильтра по заданному диапазону дат:
 * Request method: GET
-* URL: http://localhost:8000/api/surveysApp/view/active/
-* Header:
-    * Authorization: Token userToken
-* Example:
-```
-curl --location --request GET 'http://localhost:8000/api/surveysApp/view/active/' \
---header 'Authorization: Token %userToken'
-```
+* Доступные фильтры из DB для подстановки в URL:
+    * date
+    * views
+    * clicks
+    * cost
 
-### Создаем вопрос:
-* Request method: POST
-* URL: http://localhost:8000/api/question/create/
-* Header:
-    * Authorization: Token userToken
-* Body:
-    * survey: id of survey 
-    * question_text: 
-    * question_type: can be only `one`, `multiple` or `text`
-* Example:
-```
-curl --location --request POST 'http://localhost:8000/api/question/create/' \
---header 'Authorization: Token %userToken' \
---form 'survey=%survey' \
---form 'question_text=%question_text' \
---form 'question_type=%question_type \
-```
+* URL Example: http://127.0.0.1:8000/api/counters/2020-01-01/2021-10-15/views/
 
-### Обновляем вопрос:
-* Request method: PATCH
-* URL: http://localhost:8000/api/question/update/[question_id]/
-* Header:
-    * Authorization: Token userToken
-* Param:
-    * question_id
-* Body:
-    * survey: id of survey 
-    * question_text: question
-    * question_type: can be only `one`, `multiple` or `text`
-* Example:
-```
-curl --location --request PATCH 'http://localhost:8000/api/question/update/[question_id]/' \
---header 'Authorization: Token %userToken' \
---form 'survey=%survey' \
---form 'question_text=%question_text' \
---form 'question_type=%question_type \
-```
 
-### Удаляем вопрос:
-* Request method: DELETE
-* URL: http://localhost:8000/api/question/update/[question_id]/
-* Header:
-    * Authorization: Token userToken
-* Param:
-    * question_id
-* Example:
-```
-curl --location --request DELETE 'http://localhost:8000/api/question/update/[question_id]/' \
---header 'Authorization: Token %userToken' \
---form 'survey=%survey' \
---form 'question_text=%question_text' \
---form 'question_type=%question_type \
-```
-
-### Создаем выбор:
-* Request method: POST
-* URL: http://localhost:8000/api/choice/create/
-* Header:
-    * Authorization: Token userToken
-* Body:
-    * question: id of question
-    * choice_text: choice
-* Example:
-```
-curl --location --request POST 'http://localhost:8000/api/choice/create/' \
---header 'Authorization: Token %userToken' \
---form 'question=%question' \
---form 'choice_text=%choice_text'
-```
-
-### Обновляем выбор:
-* Request method: PATCH
-* URL: http://localhost:8000/api/choice/update/[choice_id]/
-* Header:
-    * Authorization: Token userToken
-* Param:
-    * choice_id
-* Body:
-    * question: id of question
-    * choice_text: choice
-* Example:
-```
-curl --location --request PATCH 'http://localhost:8000/api/choice/update/[choice_id]/' \
---header 'Authorization: Token %userToken' \
---form 'question=%question' \
---form 'choice_text=%choice_text'
-```
-
-### Обновляем выбор:
-* Request method: DELETE
-* URL: http://localhost:8000/api/choice/update/[choice_id]/
-* Header:
-    * Authorization: Token userToken
-* Param:
-    * choice_id
-* Example:
-```
-curl --location --request DELETE 'http://localhost:8000/api/choice/update/[choice_id]/' \
---header 'Authorization: Token %userToken' \
---form 'question=%question' \
---form 'choice_text=%choice_text'
-```
-
-### Создаем ответ:
-* Request method: POST
-* URL: http://localhost:8000/api/answer/create/
-* Header:
-    * Authorization: Token userToken
-* Body:
-    * survey: id of survey
-    * question: id of question
-    * choice: if question type is one or multiple then it’s id of choice else null
-    * choice_text: if question type is text then it’s text based answer else null
-* Example:
-```
-curl --location --request POST 'http://localhost:8000/api/answer/create/' \
---header 'Authorization: Token %userToken' \
---form 'survey=%survey' \
---form 'question=%question' \
---form 'choice=%choice \
---form 'choice_text=%choice_text'
-```
-
-### Обновляем ответ:
-* Request method: PATCH
-* URL: http://localhost:8000/api/answer/update/[answer_id]/
-* Header:
-    * Authorization: Token userToken
-* Param:
-    * answer_id
-* Body:
-    * survey: id of survey
-    * question: id of question
-    * choice: if question type is one or multiple then it’s id of choice else null
-    * choice_text: if question type is text then it’s text based answer else null
-* Example:
-```
-curl --location --request PATCH 'http://localhost:8000/api/answer/update/[answer_id]' \
---header 'Authorization: Token %userToken' \
---form 'survey=%survey' \
---form 'question=%question' \
---form 'choice=%choice \
---form 'choice_text=%choice_text'
-```
-
-### Удаляем ответ:
-* Request method: DELETE
-* URL: http://localhost:8000/api/answer/update/[answer_id]/
-* Header:
-    * Authorization: Token userToken
-* Param:
-    * answer_id
-* Example:
-```
-curl --location --request DELETE 'http://localhost:8000/api/answer/update/[answer_id]' \
---header 'Authorization: Token %userToken'
-```
-
-### Просматриваем ответы пользователя:
+### Метод сброса статистики:
 * Request method: GET
-* URL: http://localhost:8000/api/answer/view/[user_id]/
-* Param:
-    * user_id
-* Header:
-    * Authorization: Token userToken
-* Example:
-```
-curl --location --request GET 'http://localhost:8000/api/answer/view/[user_id]' \
---header 'Authorization: Token %userToken'
+* URL Example: http://127.0.0.1:8000/api/delete/
+
+
+### Покрытие unit-тестами:
+* Сделал проверку вьюх на вызов. Запустите в корне:
+* Example: python manage.py test
